@@ -34,19 +34,19 @@ let simple _ =
     |> printfn "%d"
 
 let validateByr value =
-    (String.length value = 4)
-    && (value <= "2002")
-    && (value >= "1920")
+    String.length value = 4
+    && value <= "2002"
+    && value >= "1920"
 
 let validateIyr value =
-    (String.length value = 4)
-    && (value <= "2020")
-    && (value >= "2010")
+    String.length value = 4
+    && value <= "2020"
+    && value >= "2010"
 
 let validateEyr value =
-    (String.length value = 4)
-    && (value <= "2030")
-    && (value >= "2020")
+    String.length value = 4
+    && value <= "2030"
+    && value >= "2020"
 
 let validateHgt value =
     let mat =
@@ -85,21 +85,18 @@ let validations =
            "hgt", validateHgt
            "hcl", validateHcl
            "ecl", validateEcl
-           "pid", validatePid
-           "cid", (fun _ -> true) ]
+           "pid", validatePid ]
 
 let valid line =
     let matches = Regex.Matches(line, pattern)
 
     matches
     |> Seq.map (fun mat -> (mat.Groups.[1].Value, mat.Groups.[2].Value))
-    |> Map.ofSeq
-    // Since we're ignoring cid anyway, we can change its value if it's
-    // already present.
-    |> Map.add "cid" ""
-    |> Map.map (fun field value -> validations.Item field value)
-    |> Seq.sumBy (fun pair -> if pair.Value then 1 else 0)
-    |> (=) 8
+    |> Seq.map (fun (field, value) ->
+        validations.ContainsKey field
+        && validations.Item field value)
+    |> Seq.sumBy (fun b -> if b then 1 else 0)
+    |> (=) 7
 
 let _ =
     use file = new StreamReader(INPUT_PATH)
